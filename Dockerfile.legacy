@@ -1,0 +1,28 @@
+FROM debian:buster-slim
+
+RUN apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    curl git mercurial \
+    build-essential cmake ninja-build clang srecord \
+    binutils-arm-none-eabi crossbuild-essential-armhf gcc-arm-none-eabi \
+    python2 python2-dev python-pip python-setuptools python-usb \
+    libffi-dev libssl-dev libxml2-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN pip install -U mbed-cli yotta
+
+RUN mkdir /root/bin \
+  && echo "#!/usr/bin/env bash" > /root/bin/cmake \
+  && echo "/usr/bin/cmake -DCMAKE_C_COMPILER_WORKS=TRUE \$@" >> /root/bin/cmake \
+  && chmod +x /root/bin/cmake
+ENV PATH="/root/bin:${PATH}"
+
+RUN cd /tmp && mbed new test && cd test \
+  && pip install -r mbed-os/requirements.txt \
+  && pip install -U fuzzywuzzy \
+  && mbed compile >/dev/null 2>&1; cd /tmp \
+  && rm -r /tmp/test \
+  && mbed config --global toolchain gcc_arm
+
+RUN mkdir /app
+WORKDIR /app
