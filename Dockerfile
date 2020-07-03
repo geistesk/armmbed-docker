@@ -18,6 +18,12 @@ RUN cd /usr/local/lib/python3.7/dist-packages/mbed \
   && patch < /tmp/mbed-py3.patch \
   && rm /tmp/mbed-py3.patch
 
+RUN mkdir /root/bin \
+  && echo "#!/usr/bin/env bash" > /root/bin/cmake \
+  && echo "/usr/bin/cmake -DCMAKE_C_COMPILER_WORKS=TRUE \$@" >> /root/bin/cmake \
+  && chmod +x /root/bin/cmake
+ENV PATH="/root/bin:${PATH}"
+
 RUN cd /tmp && mbed new test && cd test \
   && pip3 install -r mbed-os/requirements.txt \
   && mbed compile >/dev/null 2>&1; cd /tmp \
