@@ -11,7 +11,12 @@ RUN apt-get update \
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
-RUN pip3 install -U mbed-cli yotta
+RUN pip3 install -U mbed-cli==1.10.4 yotta
+
+RUN cd /usr/local/lib/python3.7/dist-packages/mbed \
+  && curl -o /tmp/mbed-py3.patch https://patch-diff.githubusercontent.com/raw/ARMmbed/mbed-cli/pull/969.patch \
+  && patch < /tmp/mbed-py3.patch \
+  && rm /tmp/mbed-py3.patch
 
 RUN cd /tmp && mbed new test && cd test \
   && pip3 install -r mbed-os/requirements.txt \
